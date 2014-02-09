@@ -70,29 +70,17 @@ chrome.storage.local.get('key', function(data) {
 });
 
 chrome.bookmarks.onRemoved.addListener(function (id, info) {
-	var request = new XMLHttpRequest();
-	request.open('POST', 'http://localhost:3000/remove', true);
-	request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-	request.send(JSON.stringify({key: storage_key, id: id}));
+	_.postJSON('http://localhost:3000/remove', {key: storage_key, id: id});
 });
 
 chrome.bookmarks.onCreated.addListener(function (id, bookmark) {
-	var request = new XMLHttpRequest();
-	request.open('POST', "http://localhost:3000/bookmark", true);
-	request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-	request.send(JSON.stringify({key: storage_key, bookmark: bookmark}));
+	_.postJSON("http://localhost:3000/bookmark", {key: storage_key, bookmark: bookmark});
 });
 
 chrome.bookmarks.onChanged.addListener(function (id, changeInfo) {
-	var request = new XMLHttpRequest();
-	request.open('POST', "http://localhost:3000/bookmark_changed", true);
-	request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-	request.send(JSON.stringify({key: storage_key, id: id, changed: changeInfo}));
-})
+	_.postJSON("http://localhost:3000/bookmark_changed", {key: storage_key, id: id, changed: changeInfo});
+});
 
 chrome.bookmarks.onMoved.addListener(function (id, moveInfo) {
-	var request = new XMLHttpRequest();
-	request.open('POST', "http://localhost:3000/bookmark_moved", true);
-	request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-	request.send(JSON.stringify({key: storage_key, id: id, moved: moveInfo}));
-})
+	_.postJSON("http://localhost:3000/bookmark_moved", {key: storage_key, id: id, moved: moveInfo});
+});
