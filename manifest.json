@@ -1,0 +1,28 @@
+{
+  "manifest_version": 2,
+
+  "name": "Chrome Bookmarks",
+  "description": "This extension allows to sync chrome bookmarks and then view them on a separate page in any browser.",
+  "version": "1.0",
+
+  "browser_action": {
+    "default_icon": "icon.png",
+    "default_popup": "main.html"
+  },
+  
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
+
+  "permissions": [
+    "http://localhost:3000/",
+    "bookmarks",
+    "storage"
+  ],
+
+  "background": {
+    "scripts": ["utility.js", "background.js"]
+  }
+}
