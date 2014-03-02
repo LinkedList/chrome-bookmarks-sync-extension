@@ -21,14 +21,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			chrome.extension.getBackgroundPage().syncBookmarks(key);
 		}
 	});
-	
+
 	_.id("remove").addEventListener('click', function (event) {
 		event.preventDefault();
 
 		_.postJSON("http://localhost:3000/initial_remove", {key: storage_key});
 	})
 });
-
-
-
-

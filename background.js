@@ -1,34 +1,32 @@
-function isBookmark(bookmark_object) {
-	return !('children' in bookmark_object);
-}
+var server_url = "http://localhost:3000/";
 
-function isFolder(bookmark_object) {
-	return 'children' in bookmark_object;
-}
+function syncBookmarks(key) {
+	var bookmarks = {};
+	var folders = [];
 
-function extractFromFolder(folder, key) {
-	var length = folder.children.length;
-
-	for(var j=0; j<length; j++){
-		var bookmark = folder.children[j];
-
-		sendBookmark(bookmark, key);
-		sendFolder(bookmark, key);
-
-		if(isFolder(bookmark)) {	
-			extractFromFolder(bookmark, key);
-		}
+	/**
+	 * description
+	 * @param  {Object}  bookmark_object chrome bookmarks tree node
+	 * @return {Boolean}
+	 */
+	function isBookmark(bookmark_object) {
+		return !('children' in bookmark_object);
 	}
-}
 
-function sendBookmark (bookmark, key) {
-	if(isBookmark(bookmark)) {
-		_.postJSON("http://localhost:3000/bookmark", {key: key, bookmark: bookmark});
+	/**
+	 * Folder check
+	 * @param  {Object}  bookmark_object chrome bookmarks tree node
+	 * @return {Boolean}
+	 */
+	function isFolder(bookmark_object) {
+		return 'children' in bookmark_object;
 	}
-}
 
-function sendFolder (folder, key) {
-	if(isFolder(folder)) {
+	/**
+	 * @param  {Object} folder chrome bookmarks tree node
+	 * @return {Object} folder object without children array
+	 */
+	function folderObject(folder) {
 		var _folder = {}
 		_folder.dateAdded = folder.dateAdded;
 		_folder.dateGroupModified = folder.dateGroupModified;
@@ -37,50 +35,74 @@ function sendFolder (folder, key) {
 		_folder.parentId = folder.parentId;
 		_folder.title = folder.title;
 
-		_.postJSON("http://localhost:3000/folder", {key: key, folder: _folder});
-	} 
-}
+		return _folder;
+	}
 
-function syncBookmarks(key) {
-	chrome.storage.local.set({'key': key}, function(data) {});
-
-	chrome.bookmarks.getTree(function (data) {
-
-		var main_children = data[0].children;
-		var length = data[0].children.length
-
-		for(var i=0; i<length; i++) {
-			var bookmark_object = data[0].children[i];
-
-			sendBookmark(bookmark_object, key);
-			sendFolder(bookmark_object, key);
-
-			if(isFolder(bookmark_object)) {
-				extractFromFolder(bookmark_object, key);
-			}
+	/**
+	 * Recursive function that extracts bookmarks from folder node in tree
+	 * and creates bookmars object and populates folders array
+	 * @param  {Object} folder chrome bookmarks tree node with children
+	 */
+	function extractFromFolder(folder) {
+		if(typeof bookmarks[folder.title] === 'undefined') {
+			bookmarks[folder.title] = [];
 		}
+
+		folder.children.forEach(function (child) {
+			if(isFolder(child)) {
+				folders.push(folderObject(child));
+				extractFromFolder(child);
+			}
+
+			if(isBookmark(child)) {
+				bookmarks[folder.title].push(child);
+			}
+		});
+	}
+
+	chrome.storage.local.set({'key': key}, function(data) {
+		console.log("Storage key set: " + key);
+
+		chrome.bookmarks.getTree(function (data) {
+
+			var main_children = data[0].children;
+
+			//extract first bookmark folders
+			main_children.forEach(function(folder) {
+				//better check
+				if(isFolder(folder)) {
+					//save folders to array without children
+					folders.push(folderObject(folder));
+					extractFromFolder(folder);
+				}
+			});
+
+			//send chunks to server TODO
+		});
 	});
+
+
 }
 
 var storage_key = "";
 chrome.storage.local.get('key', function(data) {
-  if(data.key.length !== 0) {
-    storage_key = data.key
-  }
+	if(data.key.length !== 0) {
+		storage_key = data.key
+	}
 });
 
 chrome.bookmarks.onRemoved.addListener(function (id, info) {
-	_.postJSON('http://localhost:3000/remove', {key: storage_key, id: id});
+	_.postJSON(server_url + 'remove', {key: storage_key, id: id});
 });
 
 chrome.bookmarks.onCreated.addListener(function (id, bookmark) {
-	_.postJSON("http://localhost:3000/bookmark", {key: storage_key, bookmark: bookmark});
+	_.postJSON(server_url + "bookmark", {key: storage_key, bookmark: bookmark});
 });
 
 chrome.bookmarks.onChanged.addListener(function (id, changeInfo) {
-	_.postJSON("http://localhost:3000/bookmark_changed", {key: storage_key, id: id, changed: changeInfo});
+	_.postJSON(server_url + "bookmark_changed", {key: storage_key, id: id, changed: changeInfo});
 });
 
 chrome.bookmarks.onMoved.addListener(function (id, moveInfo) {
-	_.postJSON("http://localhost:3000/bookmark_moved", {key: storage_key, id: id, moved: moveInfo});
+	_.postJSON(server_url + "bookmark_moved", {key: storage_key, id: id, moved: moveInfo});
 });
