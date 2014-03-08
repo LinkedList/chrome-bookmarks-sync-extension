@@ -1,30 +1,30 @@
 var server_url = "http://localhost:3000/";
 
 /**
+ * description
+ * @param  {Object}  bookmark_object chrome bookmarks tree node
+ * @return {Boolean}
+ */
+function isBookmark(bookmark_object) {
+	return 'url' in bookmark_object;
+}
+
+/**
+ * Folder check
+ * @param  {Object}  bookmark_object chrome bookmarks tree node
+ * @return {Boolean}
+ */
+function isFolder(bookmark_object) {
+	return !('url' in bookmark_object);
+}
+
+/**
  * Main function for traversing the bookmarks tree and sending it to server
  * @param  {String} key api key which is a mongo ObjectId
  */
 function syncBookmarks(key) {
 	var bookmarks = {};
 	var folders = [];
-
-	/**
-	 * description
-	 * @param  {Object}  bookmark_object chrome bookmarks tree node
-	 * @return {Boolean}
-	 */
-	function isBookmark(bookmark_object) {
-		return !('children' in bookmark_object);
-	}
-
-	/**
-	 * Folder check
-	 * @param  {Object}  bookmark_object chrome bookmarks tree node
-	 * @return {Boolean}
-	 */
-	function isFolder(bookmark_object) {
-		return 'children' in bookmark_object;
-	}
 
 	/**
 	 * @param  {Object} folder chrome bookmarks tree node
@@ -104,7 +104,11 @@ chrome.bookmarks.onRemoved.addListener(function (id, info) {
 });
 
 chrome.bookmarks.onCreated.addListener(function (id, bookmark) {
-	_.postJSON(server_url + "bookmark", {key: storage_key, bookmark: bookmark});
+	if(isFolder(bookmark)) {
+		_.postJSON(server_url + "folder", {key: storage_key, folder: bookmark});
+	} else {
+		_.postJSON(server_url + "bookmark", {key: storage_key, bookmark: bookmark});
+	}
 });
 
 chrome.bookmarks.onChanged.addListener(function (id, changeInfo) {
