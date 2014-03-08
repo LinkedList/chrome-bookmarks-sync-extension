@@ -1,5 +1,9 @@
 var server_url = "http://localhost:3000/";
 
+/**
+ * Main function for traversing the bookmarks tree and sending it to server
+ * @param  {String} key api key which is a mongo ObjectId
+ */
 function syncBookmarks(key) {
 	var bookmarks = {};
 	var folders = [];
@@ -77,11 +81,15 @@ function syncBookmarks(key) {
 				}
 			});
 
-			//send chunks to server TODO
+			//send folders array
+			_.postJSON(server_url + 'folders', {key: key, folders: folders});
+
+			//send bookmarks
+			Object.keys(bookmarks).forEach(function(folder) {
+				_.postJSON(server_url + 'bookmarks', {key: key, bookmarks: bookmarks[folder]});
+			});
 		});
 	});
-
-
 }
 
 var storage_key = "";
