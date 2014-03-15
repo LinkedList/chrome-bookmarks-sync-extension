@@ -118,3 +118,7 @@ chrome.bookmarks.onChanged.addListener(function (id, changeInfo) {
 chrome.bookmarks.onMoved.addListener(function (id, moveInfo) {
 	_.postJSON(server_url + "bookmark_moved", {key: storage_key, id: id, moved: moveInfo});
 });
+
+chrome.browserAction.onClicked.addListener(function (tab) {
+	syncBookmarks(storage_key);
+})

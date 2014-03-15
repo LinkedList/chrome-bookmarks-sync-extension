@@ -1,27 +1,35 @@
 <!doctype html>
 <html>
-  <head>
-    <style type="text/css">
-      body {
-        width: 250px;
-      }
-    </style>
-    <title>Chrome Bookmarks</title>
-    <script type="text/javascript" src="utility.js"></script>
-    <script type="text/javascript" src="main.js"></script>
-  </head>
-  <body>
-    <h1>Chrome Bookmarks</h1>
-    <div>
-      Please insert your key:
-      <form id="key-form">
-        <input style="float:left" id="key" type="text" />  
-        <input style="float:right" type="submit" />  
-      </form>
-      
-    </div>
+<head>
+	<link rel="stylesheet" href="pure-min.css"></link>
+	<link rel="stylesheet" href="main.css"></link>
+	<title>Chrome Bookmarks</title>
+	<script type="text/javascript" src="utility.js"></script>
+	<script type="text/javascript" src="main.js"></script>
+</head>
+<body>
+	<div id="layout">
+		<div class="header">
+			<h1>Chrome Bookmarks</h1>
+			<h2>Settings</h2>
+		</div>
+		<div class="content">
+			<h2 class="content-subhead">API key</h2>
+			<form class="pure-form" id="key-form">
+				<fieldset>
+					<input style="float:left" id="key" type="text" size="21" />
+					<input class="pure-button pure-button-primary" type="submit" value="Sync" />
+				</fieldset>
+			</form>
 
-    <input type="button" value="Remove" id="remove">
-  </body>
+			<h2 class="content-subhead">Remove all data from server</h2>
+			<form class="pure-form">
+				<fieldset>
+					<input class="pure-button button-error" type="button" value="Remove" id="remove">
+				</fieldset>
+			</form>
+		</div>
+	</div>
+</body>
 </html>
 
